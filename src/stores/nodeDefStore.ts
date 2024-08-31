@@ -5,6 +5,7 @@ import { Type, Transform, plainToClass, Expose } from 'class-transformer'
 import { ComfyWidgetConstructor } from '@/scripts/widgets'
 import { TreeNode } from 'primevue/treenode'
 import { buildTree } from '@/utils/treeUtil'
+import type { TreeExplorerNode } from '@/types/treeExplorerTypes'
 
 export class BaseInputSpec<T = any> {
   name: string
@@ -251,10 +252,12 @@ export const SYSTEM_NODE_DEFS: Record<string, ComfyNodeDef> = {
   }
 }
 
-export function buildNodeDefTree(nodeDefs: ComfyNodeDefImpl[]): TreeNode {
+export function buildNodeDefTree(
+  nodeDefs: ComfyNodeDefImpl[]
+): TreeExplorerNode<ComfyNodeDefImpl> {
   return buildTree(nodeDefs, (nodeDef: ComfyNodeDefImpl) =>
     nodeDef.nodePath.split('/')
-  )
+  ) as TreeExplorerNode<ComfyNodeDefImpl>
 }
 
 export function createDummyFolderNodeDef(folderPath: string): ComfyNodeDefImpl {
@@ -298,7 +301,7 @@ export const useNodeDefStore = defineStore('nodeDef', {
     nodeSearchService() {
       return new NodeSearchService(this.visibleNodeDefs)
     },
-    nodeTree(): TreeNode {
+    nodeTree(): TreeExplorerNode<ComfyNodeDefImpl> {
       return buildNodeDefTree(this.visibleNodeDefs)
     }
   },

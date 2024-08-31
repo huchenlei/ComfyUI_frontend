@@ -34,7 +34,7 @@
         <NodeSearchFilter @addFilter="onAddFilter" />
       </Popover>
 
-      <NodeTreeExplorer :root="root" />
+      <NodeTreeExplorer :roots="renderedRoot.children" />
       <!-- <Tree
         class="node-lib-tree"
         v-model:expandedKeys="expandedKeys"
@@ -168,8 +168,6 @@ const allNodesRoot = computed<TreeExplorerNode<ComfyNodeDefImpl>>(() => {
     key: 'all-nodes',
     label: 'All Nodes',
     leaf: false,
-    icon: 'pi pi-folder',
-    type: 'folder',
     children: [
       ...(nodeBookmarkStore.bookmarkedRoot.children ?? []),
       ...nodeDefStore.nodeTree.children
@@ -250,7 +248,7 @@ const insertNode = (nodeDef: ComfyNodeDefImpl) => {
   app.addNodeOnGraph(nodeDef, { pos: app.getCanvasCenter() })
 }
 
-const filteredRoot = ref<TreeNode | null>(null)
+const filteredRoot = ref<TreeExplorerNode<ComfyNodeDefImpl> | null>(null)
 const filters: Ref<Array<SearchFilter & { filter: FilterAndValue<string> }>> =
   ref([])
 const handleSearch = (query: string) => {

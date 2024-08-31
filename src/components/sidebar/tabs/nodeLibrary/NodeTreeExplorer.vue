@@ -1,5 +1,5 @@
 <template>
-  <TreeExplorer :root="props.root">
+  <TreeExplorer :roots="props.roots">
     <template #node="{ node }">
       <NodeTreeNode :node="node.data" />
     </template>
@@ -13,6 +13,6 @@ import type { TreeExplorerNode } from '@/types/treeExplorerTypes'
 import NodeTreeNode from './NodeTreeNode.vue'
 
 const props = defineProps<{
-  root: TreeExplorerNode<ComfyNodeDefImpl>
+  roots: TreeExplorerNode<ComfyNodeDefImpl>[]
 }>()
 </script>
