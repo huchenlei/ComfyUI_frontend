@@ -42,30 +42,28 @@ import ContextMenu from 'primevue/contextmenu'
 import EditableText from '@/components/common/EditableText.vue'
 import TreeFolder from '@/components/common/treeExplorer/TreeFolder.vue'
 import TreeLeaf from '@/components/common/treeExplorer/TreeLeaf.vue'
-import type { TreeNode } from 'primevue/treenode'
+import type { TreeExplorerNode } from '@/types/treeExplorerTypes'
 import type { MenuItem } from 'primevue/menuitem'
 import { useTreeExpansion } from '@/hooks/treeHooks'
-import { sortedTree } from '@/utils/treeUtil'
 
 const props = defineProps<{
-  root: TreeNode
-  alphabeticalSort?: boolean
+  root: TreeExplorerNode
+  extraMenuItems?: MenuItem[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'nodeClick', node: TreeNode): void
-  (e: 'nodeRename', node: TreeNode, newName: string): void
-  (e: 'contextMenu', node: TreeNode, event: MouseEvent): void
+  (e: 'nodeClick', node: TreeExplorerNode): void
+  (e: 'nodeRename', node: TreeExplorerNode, newName: string): void
+  (e: 'contextMenu', node: TreeExplorerNode, event: MouseEvent): void
 }>()
 
-const { expandedKeys, expandNode, toggleNodeOnEvent } = useTreeExpansion()
+const { expandedKeys, toggleNodeOnEvent } = useTreeExpansion()
 
 const renderedRoot = computed(() => {
-  const root = props.alphabeticalSort ? sortedTree(props.root) : props.root
-  return fillNodeInfo(root)
+  return fillNodeInfo(props.root)
 })
 
-const getTreeNodeIcon = (node: TreeNode) => {
+const getTreeNodeIcon = (node: TreeExplorerNode) => {
   if (node.leaf) {
     return 'pi pi-file'
   }
@@ -73,35 +71,34 @@ const getTreeNodeIcon = (node: TreeNode) => {
   return isExpanded ? 'pi pi-folder-open' : 'pi pi-folder'
 }
 
-const fillNodeInfo = (node: TreeNode): TreeNode => {
+const fillNodeInfo = (node: TreeExplorerNode): TreeExplorerNode => {
   const children = node.children?.map(fillNodeInfo)
   return {
     ...node,
     icon: getTreeNodeIcon(node),
     children,
     type: node.leaf ? 'node' : 'folder',
-    totalNodes: node.leaf
+    totalLeaves: node.leaf
       ? 1
-      : children.reduce((acc, child) => acc + child.totalNodes, 0)
+      : children.reduce((acc, child) => acc + child.totalLeaves, 0)
   }
 }
 
-const handleItemDropped = (node: TreeNode) => {
+const handleItemDropped = (node: TreeExplorerNode) => {
   expandedKeys.value[node.key] = true
 }
 
-const onNodeContentClick = (e: MouseEvent, node: TreeNode) => {
+const onNodeContentClick = (e: MouseEvent, node: TreeExplorerNode) => {
   if (!node.key) return
   if (node.type === 'folder') {
     toggleNodeOnEvent(e, node)
-  } else {
-    emit('nodeClick', node)
   }
+  emit('nodeClick', node)
 }
 
 const menu = ref(null)
-const menuTargetNode = ref<TreeNode | null>(null)
-const renameEditingNode = ref<TreeNode | null>(null)
+const menuTargetNode = ref<TreeExplorerNode | null>(null)
+const renameEditingNode = ref<TreeExplorerNode | null>(null)
 
 const menuItems = computed<MenuItem[]>(() => [
   {
@@ -110,16 +107,17 @@ const menuItems = computed<MenuItem[]>(() => [
     command: () => {
       renameEditingNode.value = menuTargetNode.value
     }
-  }
+  },
+  ...(props.extraMenuItems || [])
 ])
 
-const handleContextMenu = (node: TreeNode, e: MouseEvent) => {
+const handleContextMenu = (node: TreeExplorerNode, e: MouseEvent) => {
   menuTargetNode.value = node
   emit('contextMenu', node, e)
   menu.value?.show(e)
 }
 
-const handleRename = (node: TreeNode, newName: string) => {
+const handleRename = (node: TreeExplorerNode, newName: string) => {
   emit('nodeRename', node, newName)
   renameEditingNode.value = null
 }

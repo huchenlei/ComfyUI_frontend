@@ -6,8 +6,8 @@
       </slot>
     </span>
     <Badge
-      v-if="props.node.totalNodes"
-      :value="props.node.totalNodes"
+      v-if="props.node.totalLeaves"
+      :value="props.node.totalLeaves"
       severity="secondary"
       class="leaf-count-badge"
     />
@@ -17,21 +17,23 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import Badge from 'primevue/badge'
-import type { TreeNode } from 'primevue/treenode'
+import type {
+  TreeExplorerDragAndDropData,
+  TreeExplorerNode
+} from '@/types/treeExplorerTypes'
 import {
   dropTargetForElements,
   draggable
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import type { CanvasDragAndDropData } from '@/types/litegraphTypes'
 
 const props = defineProps<{
-  node: TreeNode
+  node: TreeExplorerNode
 }>()
 
 const emit = defineEmits<{
-  (e: 'itemDropped', node: TreeNode): void
-  (e: 'dragStart', node: TreeNode): void
-  (e: 'dragEnd', node: TreeNode): void
+  (e: 'itemDropped', node: TreeExplorerNode, data: TreeExplorerNode): void
+  (e: 'dragStart', node: TreeExplorerNode): void
+  (e: 'dragEnd', node: TreeExplorerNode): void
 }>()
 
 const container = ref<HTMLElement | null>(null)
@@ -50,15 +52,15 @@ onMounted(() => {
   dropTargetCleanup = dropTargetForElements({
     element: treeNodeElement.value,
     onDrop: (event) => {
-      const dndData = event.source.data as CanvasDragAndDropData
-      if (dndData.type === 'add-node') {
+      const dndData = event.source.data as TreeExplorerDragAndDropData
+      if (dndData.type === 'tree-explorer-node') {
         canDrop.value = false
-        emit('itemDropped', props.node)
+        emit('itemDropped', props.node, dndData.data)
       }
     },
     onDragEnter: (event) => {
-      const dndData = event.source.data as CanvasDragAndDropData
-      if (dndData.type === 'add-node') {
+      const dndData = event.source.data as TreeExplorerDragAndDropData
+      if (dndData.type === 'tree-explorer-node') {
         canDrop.value = true
       }
     },
@@ -71,7 +73,7 @@ onMounted(() => {
     element: treeNodeElement.value,
     getInitialData() {
       return {
-        type: 'tree-folder',
+        type: 'tree-explorer-node',
         data: props.node
       }
     },

@@ -1,17 +1,11 @@
 <template>
   <div class="tree-leaf" ref="container">
     <div class="leaf-content">
-      <slot name="before-label" :node="node">
-        <!-- Default slot content for before-label -->
-      </slot>
       <span class="leaf-label">
         <slot name="label" :node="node">
           {{ props.node.label }}
         </slot>
       </span>
-      <slot name="after-label" :node="node">
-        <!-- Default slot content for after-label -->
-      </slot>
     </div>
     <slot name="actions" :node="node">
       <!-- Default slot content for actions -->
@@ -21,16 +15,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import type { TreeNode } from 'primevue/treenode'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { TreeExplorerNode } from '@/types/treeExplorerTypes'
 
 const props = defineProps<{
-  node: TreeNode
+  node: TreeExplorerNode
 }>()
 
 const emit = defineEmits<{
-  (e: 'dragStart', node: TreeNode): void
-  (e: 'dragEnd', node: TreeNode): void
+  (e: 'dragStart', node: TreeExplorerNode): void
+  (e: 'dragEnd', node: TreeExplorerNode): void
 }>()
 
 const container = ref<HTMLElement | null>(null)
@@ -44,7 +38,7 @@ onMounted(() => {
     element: treeNodeElement,
     getInitialData() {
       return {
-        type: 'tree-node',
+        type: 'tree-explorer-node',
         data: props.node
       }
     },
