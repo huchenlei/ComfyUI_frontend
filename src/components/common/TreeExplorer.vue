@@ -18,18 +18,34 @@
     }"
   >
     <template #folder="{ node }">
-      <TreeFolder :node="node" @itemDropped="handleItemDropped">
-        <template #folder-label="{ node }">
-          <EditableText
-            :modelValue="node.label"
-            :isEditing="renameEditingNode?.key === node.key"
-            @edit="(newName: string) => handleRename(node, newName)"
-          />
-        </template>
-      </TreeFolder>
+      <slot
+        name="folder"
+        v-bind="{
+          ...nodeSlotProps,
+          node
+        }"
+      >
+        <TreeFolder :node="node" @itemDropped="handleItemDropped">
+          <template #folder-label="{ node }">
+            <EditableText
+              :modelValue="node.label"
+              :isEditing="renameEditingNode?.key === node.key"
+              @edit="(newName: string) => handleRename(node, newName)"
+            />
+          </template>
+        </TreeFolder>
+      </slot>
     </template>
     <template #node="{ node }">
-      <TreeLeaf :node="node.data" />
+      <slot
+        name="node"
+        v-bind="{
+          ...nodeSlotProps,
+          node: node.data
+        }"
+      >
+        <TreeNode :node="node.data" />
+      </slot>
     </template>
   </Tree>
   <ContextMenu ref="menu" :model="menuItems" />
@@ -41,8 +57,11 @@ import Tree from 'primevue/tree'
 import ContextMenu from 'primevue/contextmenu'
 import EditableText from '@/components/common/EditableText.vue'
 import TreeFolder from '@/components/common/treeExplorer/TreeFolder.vue'
-import TreeLeaf from '@/components/common/treeExplorer/TreeLeaf.vue'
-import type { TreeExplorerNode } from '@/types/treeExplorerTypes'
+import TreeNode from '@/components/common/treeExplorer/TreeNode.vue'
+import type {
+  TreeExplorerNode,
+  TreeExplorerNodeSlotProps
+} from '@/types/treeExplorerTypes'
 import type { MenuItem } from 'primevue/menuitem'
 import { useTreeExpansion } from '@/hooks/treeHooks'
 
@@ -120,6 +139,13 @@ const handleContextMenu = (node: TreeExplorerNode, e: MouseEvent) => {
 const handleRename = (node: TreeExplorerNode, newName: string) => {
   emit('nodeRename', node, newName)
   renameEditingNode.value = null
+}
+
+const nodeSlotProps: TreeExplorerNodeSlotProps = {
+  node: {} as TreeExplorerNode, // This will be overwritten by v-bind in the template
+  handleItemDropped,
+  renameEditingNode,
+  handleRename
 }
 </script>
 
