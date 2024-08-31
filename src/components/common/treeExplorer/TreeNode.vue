@@ -16,15 +16,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { TreeExplorerNode } from '@/types/treeExplorerTypes'
+import { RenderedTreeExplorerNode } from '@/types/treeExplorerTypes'
 
 const props = defineProps<{
-  node: TreeExplorerNode
+  node: RenderedTreeExplorerNode
 }>()
 
 const emit = defineEmits<{
-  (e: 'dragStart', node: TreeExplorerNode): void
-  (e: 'dragEnd', node: TreeExplorerNode): void
+  (e: 'dragStart', node: RenderedTreeExplorerNode): void
+  (e: 'dragEnd', node: RenderedTreeExplorerNode): void
 }>()
 
 const container = ref<HTMLElement | null>(null)

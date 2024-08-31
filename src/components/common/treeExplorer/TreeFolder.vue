@@ -19,7 +19,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import Badge from 'primevue/badge'
 import type {
   TreeExplorerDragAndDropData,
-  TreeExplorerNode
+  RenderedTreeExplorerNode
 } from '@/types/treeExplorerTypes'
 import {
   dropTargetForElements,
@@ -27,13 +27,17 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 
 const props = defineProps<{
-  node: TreeExplorerNode
+  node: RenderedTreeExplorerNode
 }>()
 
 const emit = defineEmits<{
-  (e: 'itemDropped', node: TreeExplorerNode, data: TreeExplorerNode): void
-  (e: 'dragStart', node: TreeExplorerNode): void
-  (e: 'dragEnd', node: TreeExplorerNode): void
+  (
+    e: 'itemDropped',
+    node: RenderedTreeExplorerNode,
+    data: RenderedTreeExplorerNode
+  ): void
+  (e: 'dragStart', node: RenderedTreeExplorerNode): void
+  (e: 'dragEnd', node: RenderedTreeExplorerNode): void
 }>()
 
 const container = ref<HTMLElement | null>(null)

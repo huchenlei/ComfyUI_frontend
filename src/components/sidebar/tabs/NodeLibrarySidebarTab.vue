@@ -34,13 +34,14 @@
         <NodeSearchFilter @addFilter="onAddFilter" />
       </Popover>
 
-      <Tree
+      <NodeTreeExplorer :root="root" />
+      <!-- <Tree
         class="node-lib-tree"
         v-model:expandedKeys="expandedKeys"
         selectionMode="single"
         :value="renderedRoot.children"
         :pt="{
-          nodeLabel: 'node-lib-tree-node-label',
+          nodeLabel: 'tree-explorer-node-label',
           nodeContent: ({ props }) => ({
             onClick: (e: MouseEvent) => onNodeContentClick(e, props.node),
             onMouseenter: (event: MouseEvent) =>
@@ -80,7 +81,7 @@
             @toggleBookmark="nodeBookmarkStore.toggleBookmark(node.data)"
           />
         </template>
-      </Tree>
+      </Tree> -->
       <div
         v-if="hoveredComfyNode"
         class="node-lib-node-preview"
@@ -114,11 +115,8 @@ import {
 import { computed, ref, nextTick, Ref } from 'vue'
 import type { TreeNode } from 'primevue/treenode'
 import Popover from 'primevue/popover'
-import NodeTreeLeaf from './nodeLibrary/NodeTreeLeaf.vue'
-import NodeTreeFolder from './nodeLibrary/NodeTreeFolder.vue'
-import Tree from 'primevue/tree'
+import NodeTreeExplorer from '@/components/sidebar/tabs/nodeLibrary/NodeTreeExplorer.vue'
 import ContextMenu from 'primevue/contextmenu'
-import EditableText from '@/components/common/EditableText.vue'
 import NodePreview from '@/components/node/NodePreview.vue'
 import SearchBox from '@/components/common/SearchBox.vue'
 import FolderCustomizationDialog from '@/components/common/CustomizationDialog.vue'
@@ -133,6 +131,7 @@ import { useToast } from 'primevue/usetoast'
 import NodeSearchFilter from '@/components/searchbox/NodeSearchFilter.vue'
 import { FilterAndValue } from '@/services/nodeSearchService'
 import { SearchFilter } from '@/components/common/SearchFilterChip.vue'
+import { TreeExplorerNode } from '@/types/treeExplorerTypes'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -164,15 +163,18 @@ const nodePreviewStyle = ref<Record<string, string>>({
 
 const nodeBookmarkStore = useNodeBookmarkStore()
 
-const allNodesRoot = computed<TreeNode>(() => {
+const allNodesRoot = computed<TreeExplorerNode<ComfyNodeDefImpl>>(() => {
   return {
     key: 'all-nodes',
     label: 'All Nodes',
+    leaf: false,
+    icon: 'pi pi-folder',
+    type: 'folder',
     children: [
       ...(nodeBookmarkStore.bookmarkedRoot.children ?? []),
       ...nodeDefStore.nodeTree.children
     ]
-  }
+  } as TreeExplorerNode<ComfyNodeDefImpl>
 })
 
 const root = computed(() => {
@@ -242,10 +244,6 @@ const handleNodeHover = async (
   } else {
     nodePreviewStyle.value.left = `${targetRect.left - 400}px`
   }
-}
-
-const handleItemDropped = (node: TreeNode) => {
-  expandedKeys.value[node.key] = true
 }
 
 const insertNode = (nodeDef: ComfyNodeDefImpl) => {
@@ -399,13 +397,6 @@ const onRemoveFilter = (filterAndValue) => {
 </script>
 
 <style>
-.node-lib-tree-node-label {
-  display: flex;
-  align-items: center;
-  margin-left: var(--p-tree-node-gap);
-  flex-grow: 1;
-}
-
 .node-lib-filter-popup {
   margin-left: -13px;
 }
@@ -418,25 +409,5 @@ const onRemoveFilter = (filterAndValue) => {
 
 :deep(.comfy-vue-side-bar-body) {
   background: var(--p-tree-background);
-}
-
-/*
- * The following styles are necessary to avoid layout shift when dragging nodes over folders.
- * By setting the position to relative on the parent and using an absolutely positioned pseudo-element,
- * we can create a visual indicator for the drop target without affecting the layout of other elements.
- */
-:deep(.p-tree-node-content:has(.node-tree-folder)) {
-  position: relative;
-}
-
-:deep(.p-tree-node-content:has(.node-tree-folder.can-drop))::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border: 1px solid var(--p-content-color);
-  pointer-events: none;
 }
 </style>

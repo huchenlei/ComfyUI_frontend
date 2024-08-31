@@ -1,9 +1,9 @@
 <template>
   <Tree
     class="tree-explorer"
+    :class="props.class"
     v-model:expandedKeys="expandedKeys"
-    selectionMode="single"
-    :value="renderedRoot.children"
+    :value="renderedRoots"
     :pt="{
       nodeLabel: 'tree-explorer-node-label',
       nodeContent: ({ props }) => ({
@@ -59,6 +59,7 @@ import EditableText from '@/components/common/EditableText.vue'
 import TreeFolder from '@/components/common/treeExplorer/TreeFolder.vue'
 import TreeNode from '@/components/common/treeExplorer/TreeNode.vue'
 import type {
+  RenderedTreeExplorerNode,
   TreeExplorerNode,
   TreeExplorerNodeSlotProps
 } from '@/types/treeExplorerTypes'
@@ -66,23 +67,30 @@ import type { MenuItem } from 'primevue/menuitem'
 import { useTreeExpansion } from '@/hooks/treeHooks'
 
 const props = defineProps<{
-  root: TreeExplorerNode
+  roots: TreeExplorerNode[]
+  class?: string
   extraMenuItems?: MenuItem[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'nodeClick', node: TreeExplorerNode): void
-  (e: 'nodeRename', node: TreeExplorerNode, newName: string): void
-  (e: 'contextMenu', node: TreeExplorerNode, event: MouseEvent): void
+  (e: 'nodeClick', node: RenderedTreeExplorerNode): void
+  (e: 'nodeRename', node: RenderedTreeExplorerNode, newName: string): void
+  (e: 'contextMenu', node: RenderedTreeExplorerNode, event: MouseEvent): void
 }>()
 
 const { expandedKeys, toggleNodeOnEvent } = useTreeExpansion()
 
-const renderedRoot = computed(() => {
-  return fillNodeInfo(props.root)
+const renderedRoots = computed<RenderedTreeExplorerNode[]>(() => {
+  return props.roots.map(fillNodeInfo)
 })
 
 const getTreeNodeIcon = (node: TreeExplorerNode) => {
+  if (typeof node.icon === 'function') {
+    return node.icon(node)
+  } else if (typeof node.icon === 'string') {
+    return node.icon
+  }
+  // node.icon is undefined
   if (node.leaf) {
     return 'pi pi-file'
   }
@@ -90,7 +98,7 @@ const getTreeNodeIcon = (node: TreeExplorerNode) => {
   return isExpanded ? 'pi pi-folder-open' : 'pi pi-folder'
 }
 
-const fillNodeInfo = (node: TreeExplorerNode): TreeExplorerNode => {
+const fillNodeInfo = (node: TreeExplorerNode): RenderedTreeExplorerNode => {
   const children = node.children?.map(fillNodeInfo)
   return {
     ...node,
@@ -107,7 +115,7 @@ const handleItemDropped = (node: TreeExplorerNode) => {
   expandedKeys.value[node.key] = true
 }
 
-const onNodeContentClick = (e: MouseEvent, node: TreeExplorerNode) => {
+const onNodeContentClick = (e: MouseEvent, node: RenderedTreeExplorerNode) => {
   if (!node.key) return
   if (node.type === 'folder') {
     toggleNodeOnEvent(e, node)
@@ -130,13 +138,13 @@ const menuItems = computed<MenuItem[]>(() => [
   ...(props.extraMenuItems || [])
 ])
 
-const handleContextMenu = (node: TreeExplorerNode, e: MouseEvent) => {
+const handleContextMenu = (node: RenderedTreeExplorerNode, e: MouseEvent) => {
   menuTargetNode.value = node
   emit('contextMenu', node, e)
   menu.value?.show(e)
 }
 
-const handleRename = (node: TreeExplorerNode, newName: string) => {
+const handleRename = (node: RenderedTreeExplorerNode, newName: string) => {
   emit('nodeRename', node, newName)
   renameEditingNode.value = null
 }

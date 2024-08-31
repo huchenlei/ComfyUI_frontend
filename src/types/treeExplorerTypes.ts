@@ -3,23 +3,28 @@ import { Ref } from 'vue'
 export interface TreeExplorerNode<T = any> {
   key: string
   label: string
-  children?: TreeExplorerNode<T>[]
   data: T
   leaf: boolean
+  children?: TreeExplorerNode<T>[]
+  icon?: string | ((node: TreeExplorerNode<T>) => string)
+}
+
+export interface RenderedTreeExplorerNode<T = any> extends TreeExplorerNode<T> {
+  children?: RenderedTreeExplorerNode<T>[]
   icon: string
   type: 'folder' | 'node'
   // Total number of leaves in the subtree
-  totalLeaves?: number
+  totalLeaves: number
 }
 
 export type TreeExplorerDragAndDropData<T = any> = {
   type: 'tree-explorer-node'
-  data: TreeExplorerNode<T>
+  data: RenderedTreeExplorerNode<T>
 }
 
 export interface TreeExplorerNodeSlotProps {
-  node: TreeExplorerNode
-  handleItemDropped: (node: TreeExplorerNode) => void
-  renameEditingNode: Ref<TreeExplorerNode | null>
-  handleRename: (node: TreeExplorerNode, newName: string) => void
+  node: RenderedTreeExplorerNode
+  handleItemDropped: (node: RenderedTreeExplorerNode) => void
+  renameEditingNode: Ref<RenderedTreeExplorerNode | null>
+  handleRename: (node: RenderedTreeExplorerNode, newName: string) => void
 }
