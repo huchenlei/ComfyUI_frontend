@@ -23,7 +23,8 @@ import { app } from './scripts/app'
 import { useSettingStore } from './stores/settingStore'
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceStore } from './stores/workspaceStateStore'
-import NodeLibrarySidebarTab from './components/sidebar/tabs/NodeLibrarySidebarTab.vue'
+import NodeLibrarySidebarTab from '@/components/sidebar/tabs/NodeLibrarySidebarTab.vue'
+import FileExplorerSidebarTab from '@/components/sidebar/tabs/FileExplorerSidebarTab.vue'
 import GlobalDialog from './components/dialog/GlobalDialog.vue'
 import GlobalToast from './components/toast/GlobalToast.vue'
 import UnloadWindowConfirmDialog from './components/dialog/UnloadWindowConfirmDialog.vue'
@@ -97,6 +98,15 @@ const init = () => {
     title: t('sideToolbar.nodeLibrary'),
     tooltip: t('sideToolbar.nodeLibrary'),
     component: markRaw(NodeLibrarySidebarTab),
+    type: 'vue'
+  })
+
+  app.extensionManager.registerSidebarTab({
+    id: 'file-explorer',
+    icon: 'pi pi-file',
+    title: t('sideToolbar.fileExplorer'),
+    tooltip: t('sideToolbar.fileExplorer'),
+    component: markRaw(FileExplorerSidebarTab),
     type: 'vue'
   })
 }

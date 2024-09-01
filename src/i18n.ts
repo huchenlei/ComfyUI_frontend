@@ -56,7 +56,8 @@ const messages = {
         containImagePreview: 'Fill Image Preview',
         coverImagePreview: 'Fit Image Preview',
         clearPendingTasks: 'Clear Pending Tasks'
-      }
+      },
+      fileExplorer: 'File Explorer'
     }
   },
   zh: {
@@ -100,7 +101,8 @@ const messages = {
         showFlatList: '平铺结果',
         backToAllTasks: '返回',
         clearPendingTasks: '清除待处理任务'
-      }
+      },
+      fileExplorer: '文件'
     }
   }
   // TODO: Add more languages
