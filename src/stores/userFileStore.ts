@@ -47,7 +47,7 @@ export const useUserFileStore = defineStore('userFile', () => {
    * @param dir The directory to sync.
    */
   const syncFiles = async () => {
-    const files = await api.listUserDataFullInfo('')
+    const files = await api.listUserDataFullInfo('.')
 
     for (const file of files) {
       const existingFile = userFilesByPath.value.get(file.path)
@@ -124,6 +124,28 @@ export const useUserFileStore = defineStore('userFile', () => {
     await syncFiles()
   }
 
+  const renameFolder = async (oldPath: string, newPath: string) => {
+    const resp = await api.moveUserData(oldPath, newPath)
+    if (resp.status !== 200) {
+      throw new Error(
+        `Failed to rename folder '${oldPath}': ${resp.status} ${resp.statusText}`
+      )
+    }
+
+    // Iterate through all files and update paths for those in the renamed folder
+    for (const [path, file] of userFilesByPath.value.entries()) {
+      if (path.startsWith(oldPath + '/')) {
+        const updatedPath = newPath + path.slice(oldPath.length)
+        file.path = updatedPath
+        userFilesByPath.value.set(updatedPath, file)
+        userFilesByPath.value.delete(path)
+      }
+    }
+
+    // Sync with the API to ensure consistency
+    await syncFiles()
+  }
+
   return {
     userFiles,
     modifiedFiles,
@@ -133,6 +155,7 @@ export const useUserFileStore = defineStore('userFile', () => {
     loadFile,
     saveFile,
     deleteFile,
-    renameFile
+    renameFile,
+    renameFolder
   }
 })

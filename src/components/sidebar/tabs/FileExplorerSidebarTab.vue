@@ -26,7 +26,32 @@ import { app } from '@/scripts/app'
 import type { TreeNode } from 'primevue/treenode'
 
 const userFileStore = useUserFileStore()
-const { expandedKeys, expandNode, toggleNodeOnEvent } = useTreeExpansion()
+const { expandedKeys, toggleNodeOnEvent } = useTreeExpansion()
+
+const handleDelete = (node: RenderedTreeExplorerNode) => {
+  userFileStore.deleteFile(node.data)
+}
+
+const renameLeafNode = (node: RenderedTreeExplorerNode, newName: string) => {
+  const folder = node.data.path.split('/').slice(0, -1).join('/')
+  const newPath = folder + '/' + newName
+  userFileStore.renameFile(node.data, newPath)
+}
+
+const renameFolderNode = (node: RenderedTreeExplorerNode, newName: string) => {
+  const oldPath = node.key.replace(/^root\//, '')
+  const folder = oldPath.split('/').slice(0, -1).join('/')
+  const newPath = folder + '/' + newName
+  userFileStore.renameFolder(oldPath, newPath)
+}
+
+const handleRename = (node: RenderedTreeExplorerNode, newName: string) => {
+  if (node.leaf) {
+    renameLeafNode(node, newName)
+  } else {
+    renameFolderNode(node, newName)
+  }
+}
 
 const renderedRoot = computed<TreeExplorerNode>(() => {
   const fillNodeInfo = (node: TreeNode): TreeExplorerNode => {
@@ -39,7 +64,9 @@ const renderedRoot = computed<TreeExplorerNode>(() => {
       data: node.data,
       children,
       draggable: node.leaf,
-      droppable: !node.leaf
+      droppable: !node.leaf,
+      handleDelete,
+      handleRename
     }
   }
   return fillNodeInfo(userFileStore.workflowsTree)
@@ -54,6 +81,6 @@ const handleNodeClick = (node: RenderedTreeExplorerNode, e: MouseEvent) => {
 }
 
 onMounted(async () => {
-  await userFileStore.loadFiles()
+  await userFileStore.syncFiles()
 })
 </script>
