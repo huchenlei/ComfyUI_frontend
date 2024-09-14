@@ -24,5 +24,27 @@ export function useErrorHandling() {
       }
     }
 
-  return { wrapWithErrorHandling }
+  const wrapWithErrorHandlingAsync =
+    (
+      action: (...args: any[]) => Promise<any>,
+      errorHandler?: (error: any) => void
+    ) =>
+    async (...args: any[]) => {
+      try {
+        return await action(...args)
+      } catch (e) {
+        if (errorHandler) {
+          errorHandler(e)
+        } else {
+          toast.add({
+            severity: 'error',
+            summary: t('error'),
+            detail: e.message,
+            life: 3000
+          })
+        }
+      }
+    }
+
+  return { wrapWithErrorHandling, wrapWithErrorHandlingAsync }
 }

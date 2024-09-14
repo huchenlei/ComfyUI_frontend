@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useUserFileStore } from '@/stores/userFileStore'
 import { useTreeExpansion } from '@/hooks/treeHooks'
 import SidebarTabTemplate from '@/components/sidebar/tabs/SidebarTabTemplate.vue'
@@ -24,34 +24,25 @@ import type {
 } from '@/types/treeExplorerTypes'
 import { app } from '@/scripts/app'
 import type { TreeNode } from 'primevue/treenode'
+import { useErrorHandling } from '@/hooks/errorHooks'
 
 const userFileStore = useUserFileStore()
-const { expandedKeys, toggleNodeOnEvent } = useTreeExpansion()
+const expandedKeys = ref<Record<string, boolean>>({})
+const { toggleNodeOnEvent } = useTreeExpansion(expandedKeys)
 
 const handleDelete = (node: RenderedTreeExplorerNode) => {
   userFileStore.deleteFile(node.data)
 }
 
-const renameLeafNode = (node: RenderedTreeExplorerNode, newName: string) => {
-  const folder = node.data.path.split('/').slice(0, -1).join('/')
-  const newPath = folder + '/' + newName
-  userFileStore.renameFile(node.data, newPath)
-}
-
-const renameFolderNode = (node: RenderedTreeExplorerNode, newName: string) => {
-  const oldPath = node.key.replace(/^root\//, '')
-  const folder = oldPath.split('/').slice(0, -1).join('/')
-  const newPath = folder + '/' + newName
-  userFileStore.renameFolder(oldPath, newPath)
-}
-
-const handleRename = (node: RenderedTreeExplorerNode, newName: string) => {
-  if (node.leaf) {
-    renameLeafNode(node, newName)
-  } else {
-    renameFolderNode(node, newName)
+const { wrapWithErrorHandlingAsync } = useErrorHandling()
+const handleRename = wrapWithErrorHandlingAsync(
+  async (node: RenderedTreeExplorerNode, newName: string) => {
+    const oldPath = node.key.replace(/^root\//, '')
+    const folder = oldPath.split('/').slice(0, -1).join('/')
+    const newPath = folder + '/' + newName
+    await userFileStore.renameFolder(oldPath, newPath)
   }
-}
+)
 
 const renderedRoot = computed<TreeExplorerNode>(() => {
   const fillNodeInfo = (node: TreeNode): TreeExplorerNode => {
