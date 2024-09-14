@@ -63,20 +63,19 @@ const renderedRoot = computed<TreeExplorerNode>(() => {
   return fillNodeInfo(userFileStore.workflowsTree)
 })
 
-const handleNodeClick = async (
-  node: RenderedTreeExplorerNode<UserFile>,
-  e: MouseEvent
-) => {
-  if (node.leaf) {
-    const userFile = node.data
-    if (!userFile.isOpen) {
-      await userFileStore.loadFile(userFile)
+const handleNodeClick = wrapWithErrorHandlingAsync(
+  async (node: RenderedTreeExplorerNode<UserFile>, e: MouseEvent) => {
+    if (node.leaf) {
+      const userFile = node.data
+      if (!userFile.isOpen) {
+        await userFileStore.loadFile(userFile)
+      }
+      await app.loadGraphData(JSON.parse(userFile.content))
+    } else {
+      toggleNodeOnEvent(e, node)
     }
-    app.loadGraphData(JSON.parse(userFile.content))
-  } else {
-    toggleNodeOnEvent(e, node)
   }
-}
+)
 
 onMounted(async () => {
   await userFileStore.syncFiles()
