@@ -56,8 +56,8 @@ const renderedRoot = computed<TreeExplorerNode>(() => {
       children,
       draggable: node.leaf,
       droppable: !node.leaf,
-      handleDelete,
-      handleRename
+      handleDelete: node.leaf ? handleDelete : undefined,
+      handleRename: node.leaf ? handleRename : undefined
     }
   }
   return fillNodeInfo(userFileStore.workflowsTree)
