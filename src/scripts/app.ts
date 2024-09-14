@@ -2667,8 +2667,8 @@ export class ComfyApp {
    * Loads workflow data from the specified file
    * @param {File} file
    */
-  async handleFile(file) {
-    const removeExt = (f) => {
+  async handleFile(file: File) {
+    const removeExt = (f: string) => {
       if (!f) return f
       const p = f.lastIndexOf('.')
       if (p === -1) return f

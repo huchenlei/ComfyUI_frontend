@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useUserFileStore } from '@/stores/userFileStore'
+import { UserFile, useUserFileStore } from '@/stores/userFileStore'
 import { useTreeExpansion } from '@/hooks/treeHooks'
 import SidebarTabTemplate from '@/components/sidebar/tabs/SidebarTabTemplate.vue'
 import TreeExplorer from '@/components/common/TreeExplorer.vue'
@@ -63,9 +63,16 @@ const renderedRoot = computed<TreeExplorerNode>(() => {
   return fillNodeInfo(userFileStore.workflowsTree)
 })
 
-const handleNodeClick = (node: RenderedTreeExplorerNode, e: MouseEvent) => {
+const handleNodeClick = async (
+  node: RenderedTreeExplorerNode<UserFile>,
+  e: MouseEvent
+) => {
   if (node.leaf) {
-    app.handleFile(node.data)
+    const userFile = node.data
+    if (!userFile.isOpen) {
+      await userFileStore.loadFile(userFile)
+    }
+    app.loadGraphData(JSON.parse(userFile.content))
   } else {
     toggleNodeOnEvent(e, node)
   }
